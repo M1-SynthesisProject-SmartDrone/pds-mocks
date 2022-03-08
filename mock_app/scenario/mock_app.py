@@ -7,7 +7,7 @@ from random import randint
 from pathlib import Path
 
 import sys
-sys.path.append(Path(__file__).parents[1].as_posix())
+sys.path.append(Path(__file__).parents[2].as_posix())
 # Must be put after sys.path.append
 from library import * # noqa
 
