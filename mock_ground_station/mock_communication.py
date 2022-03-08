@@ -18,7 +18,7 @@ udp_socket = UdpSocket(PORT)
 
 def thread_receive() -> None:
     while "Thread en cours":
-        message: Message = receive_message()
+        message: Message = receive_message(udp_socket)
         if (message.type == "MANUAL_CONTROL"):
             logger.debug(f"Receive manual control : {message.content}")
         else:
@@ -26,10 +26,10 @@ def thread_receive() -> None:
             if message.type == "RECORD":
                 # Time for creating file, saving it
                 sleep(2)
-                send_answer("RECORD", True)
+                send_answer(udp_socket, "RECORD", True)
             elif message.type == "START_DRONE":
                 # Cannot do this
-                send_answer("START_DRONE", False, "Cannot do this !!!")
+                send_answer(udp_socket, "START_DRONE", False, "Cannot do this !!!")
 
 
 def thread_send() -> None:
@@ -63,10 +63,10 @@ def main():
     print("Wait for ack request")
     ack_msg = receive_message("ACK")
     sleep(0.1)
-    send_answer("ACK", True)
+    send_answer(udp_socket, "ACK", True)
 
     start_msg = receive_message("START_DRONE")
-    send_answer("START_DRONE", True)
+    send_answer(udp_socket, "START_DRONE", True)
 
     # Those threads run forever
     thread_recv = threading.Thread(target=thread_receive)
