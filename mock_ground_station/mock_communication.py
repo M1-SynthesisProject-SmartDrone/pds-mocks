@@ -5,30 +5,20 @@ from loguru import logger
 from time import sleep
 import threading
 from random import randint
+from pathlib import Path
 
-from UdpSocket import UdpSocket
-from Message import Message
+import sys
+sys.path.append(Path(__file__).parents[1].as_posix())
+# Must be put after sys.path.append
+from library import * # noqa
 
 PORT = 6869
 udp_socket = UdpSocket(PORT)
 
-def receive_message(wanted_type: str = None) -> Message:
-    message = Message.fromStr(udp_socket.receive())
-    if wanted_type is not None and message.type != wanted_type:
-        raise ValueError(f"Didn't receive the wanted type. Expected \"{wanted_type}\" but got \"{message.type}\"")
-    return message
-
-def send_answer(msg_type: str, validated: bool, message_str: str = "") -> None:
-    message = Message("ANSWER", {
-        "name": msg_type, "validated": validated, "message": message_str
-    })
-    logger.info(f"Send answer {message}")
-    udp_socket.send_as_response(message.toJsonStr())
-
 
 def thread_receive() -> None:
     while "Thread en cours":
-        message = receive_message()
+        message: Message = receive_message()
         if (message.type == "MANUAL_CONTROL"):
             logger.debug(f"Receive manual control : {message.content}")
         else:
@@ -47,7 +37,7 @@ def thread_send() -> None:
     while "Thread en cours":
         sleep(1)
         if cpt % 4 == 0:
-            drone_status = Message("DRONE_STATUS", {"armed": True})
+            drone_status = Message("DRONE_STATE", {"armed": True})
             logger.debug("Send drone status message")
             udp_socket.send_as_response(drone_status.toJsonStr())
             cpt = 0
