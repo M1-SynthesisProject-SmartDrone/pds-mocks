@@ -7,7 +7,7 @@ from random import randint
 from pathlib import Path
 
 import sys
-sys.path.append(Path(__file__).parents[2].as_posix())
+sys.path.append(Path(__file__).resolve().parents[2].as_posix())
 # Must be put after sys.path.append
 from library import * # noqa
 
@@ -43,12 +43,14 @@ def test_simple_fly():
     # Up for 10 seconds
     logger.info("Take off !")
     while (time() - time_start) < 10.0:
+        sleep(0.2)
         # Not too high !
         send_message(udp_socket, create_manual_control(z=0.1), SEND_ADDRESS)
     time_start = time()
     # Go down and disarm (normally)
     logger.info("Land")
     while (time() - time_start) < 20.0:
+        sleep(0.2)
         send_message(udp_socket, create_manual_control(z=-1.0), SEND_ADDRESS)
 
 def main():

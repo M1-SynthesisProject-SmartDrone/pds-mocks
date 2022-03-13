@@ -1,6 +1,7 @@
 """A simple udp class that permits to send and receive data
 """
 import socket
+from loguru import logger
 from typing import Any, Tuple
 
 BUFFER_SIZE = 65535
@@ -15,7 +16,7 @@ class UdpSocket:
     def receive(self) -> str:
         msg_bytes, address = self.sock.recvfrom(BUFFER_SIZE)
         message = msg_bytes.decode("utf-8")
-        print(f"Receive from {address}: {message}")
+        logger.debug(f"Received from {address}: {message}")
         self.address = address
         return message
 

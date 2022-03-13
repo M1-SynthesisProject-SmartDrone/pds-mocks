@@ -1,6 +1,9 @@
 """ This script will permit to test the server without using the app :
 it will receive requests and send aswers accordingly to the specs
 """
+
+# ! WARNING : DOES NOT WORK FOR THE MOMENT
+
 from loguru import logger
 from time import sleep, time
 from random import randint
