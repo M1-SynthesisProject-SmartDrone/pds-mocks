@@ -53,6 +53,8 @@ def test_simple_fly():
         sleep(0.2)
         send_message(udp_socket, create_manual_control(z=-1.0), SEND_ADDRESS)
 
+    drone_infos = send_receive(udp_socket, create_drone_infos(), MessageTypes.RESP_DRONE_INFOS, SEND_ADDRESS)
+
 def main():
     init_communication()
     test_simple_fly()
