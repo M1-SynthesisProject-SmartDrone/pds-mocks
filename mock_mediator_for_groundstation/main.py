@@ -1,29 +1,50 @@
 """ This script will permits to emulate the mediator behavior :
 it will receive requests and send aswers accordingly to the specs
 """
+from concurrent.futures import thread
 from typing import Callable, Dict
 from loguru import logger
-from time import sleep
+import time
 from random import randint
 from pathlib import Path
+import threading
+import signal
 
 import sys
 sys.path.append(Path(__file__).resolve().parents[1].as_posix())
 # Must be put after sys.path.append
 from library import * # noqa
+from modes import MediatorMode
+from MediatorMockInfos import MediatorMockInfos
+from Thread1 import Thread1
+from Thread2 import Thread2
 
-PORT = 7070
-tcp = TcpSocket()
+# ==== CONSTANTS ====
+PORT_1, PORT_2 = 7070, 7071
+
+# ==== GLOBAL VARIABLES ====
+infos = MediatorMockInfos()
+
+# ==== SIGNAL HANDLER ====
+def handler(signum, frame):
+    logger.info("Stop threads")
+    infos.is_running = False
 
 def main():
     logger.remove()
     logger.add(sys.stderr, level="INFO")
 
-    tcp.wait_connection(PORT)
+    # Catch SIGINT
+    signal.signal(signal.SIGINT, handler)
 
-    while "waiting for messages":
+    thread1 = Thread1(PORT_1)
+    thread2 = Thread2(PORT_2)
 
-        pass
+    thread1.start()
+    thread2.start()
+
+    thread1.join()
+    thread2.join()
 
 if __name__ == "__main__":
     main()
