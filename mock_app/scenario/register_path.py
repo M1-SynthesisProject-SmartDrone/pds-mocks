@@ -38,7 +38,7 @@ def start_record_session():
     """ In this test, we do not receive any messages, but the drone should be disarmed at the end
     """
     # Put motors at max in order to start motors
-    send_message(udp_socket, create_manual_control(z=1.0), SEND_ADDRESS)
+    # send_message(udp_socket, create_manual_control(z=1.0), SEND_ADDRESS)
     logger.info("Start recording")
     send_receive(udp_socket, create_req_record(True), MessageTypes.RESP_RECORD, SEND_ADDRESS) \
         .assert_validated()
@@ -55,6 +55,9 @@ def start_record_session():
         sleep(0.2)
         send_message(udp_socket, create_manual_control(x=1.0, y=1.0), SEND_ADDRESS)
 
+    logger.info("Stop drone")
+    send_message(udp_socket, create_manual_control(), SEND_ADDRESS)
+    
     logger.info("Stop record")
     send_receive(udp_socket, create_req_record(False), MessageTypes.RESP_RECORD, SEND_ADDRESS) \
         .assert_validated()

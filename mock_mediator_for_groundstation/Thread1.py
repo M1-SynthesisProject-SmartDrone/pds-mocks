@@ -68,8 +68,8 @@ class Thread1 (threading.Thread):
             self.tcp.send(resp.toJsonStr())
         else:
             mode_name = self.infos.mode.name
-            logger.info(
-                f"\"Register\" a point in mode {mode_name} : {msg.content}")
+            logger.info(f"Prepare for receiving {imageSize} bytes of data")
+            logger.info(f"\"Register\" a point in mode {mode_name} : {msg.content}")
             resp = MediatorMessage(resp_name, {"isDone": True}, False)
             self.tcp.send(resp.toJsonStr())
             # Receive the image
@@ -85,7 +85,7 @@ class Thread1 (threading.Thread):
         else:
             logger.info("End record")
             self.infos.mode = MediatorMode.IDLE
-        self.tcp.send(resp)
+        self.tcp.send(resp.toJsonStr())
 
     def handle_tr_launch(self, msg: MediatorMessage):
         resp = MediatorMessage(

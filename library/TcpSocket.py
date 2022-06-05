@@ -21,11 +21,13 @@ class TcpSocket:
         self.com_socket.connect((ip_address, port))
 
     def receive(self) -> str:
+        print(f"Receive string message")
         msg_bytes = self.com_socket.recv(BUFFER_SIZE)
         message = msg_bytes.decode("utf-8")
         return message
 
     def receive_bytes(self, num_bytes: int) -> bytes:
+        print(f"Receive {num_bytes} bytes")
         data = bytearray()
         while len(data) < num_bytes:
             msg_bytes = self.com_socket.recv(BUFFER_SIZE)
@@ -33,6 +35,7 @@ class TcpSocket:
         return data
 
     def send(self, message: str) -> None:
+        print("Send message")
         self.com_socket.send(message.encode("utf-8"))
 
     def send_bytes(self, data: bytes) -> None:
