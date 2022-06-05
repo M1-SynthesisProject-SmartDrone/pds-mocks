@@ -9,10 +9,14 @@ from library.TcpSocket import TcpSocket
 
 VALIDATED_KEY = "validated"
 
-@dataclass
 class MediatorMessage:
-    type: MediatorMessageTypes
-    content: Dict[str, Any]
+    def __init__(self, type: MediatorMessageTypes, content: Dict[str, Any], is_request: bool = True) -> None:
+        self.type: MediatorMessageTypes = type
+        self.content: Dict[str, Any] = content
+        if is_request:
+            self.content["requestType"] = type.value
+        else:
+            self.content["responseType"] = type.value
 
     @classmethod
     def fromStr(cls, string: str, is_request: bool = True) -> "MediatorMessage":

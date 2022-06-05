@@ -33,17 +33,17 @@ class Thread2 (threading.Thread):
             try:
                 message = MediatorMessage.receive(self.tcp, True)
                 handler = self.handler_by_request[message.type]
-                handler(self, message)
+                handler(message)
             except Exception as err:
                 logger.error(err)
 
     def handle_req_tr_points(self, msg: MediatorMessage):
         logger.info("Get all checkpoints of trip")
         id = self.infos.current_tr_id
-        r = MediatorMessage(MediatorMessageTypes.RESP_TR_FILE.value, {"content": PATH_ONE_LIST[id]})
+        r = MediatorMessage(MediatorMessageTypes.RESP_TR_FILE, {"content": PATH_ONE_LIST[id]}, False)
         msg_bytes = r.toJsonStr().encode("utf-8")
         # intermediary message
-        resp = MediatorMessage(MediatorMessageTypes.RESP_REQ_TR_POINTS.value, {"filesize": len(msg_bytes)})
+        resp = MediatorMessage(MediatorMessageTypes.RESP_REQ_TR_POINTS, {"filesize": len(msg_bytes)}, False)
         self.tcp.send(resp.toJsonStr())
 
         message = MediatorMessage.receive(self.tcp, True)
@@ -56,10 +56,10 @@ class Thread2 (threading.Thread):
     def handle_nexdroneposition(self, msg: MediatorMessage):
         logger.info("Get new drone position")
         id = self.infos.current_tr_id
-        resp = MediatorMessage(MediatorMessageTypes.RESP_DRONEPOSITION.value, {
+        resp = MediatorMessage(MediatorMessageTypes.RESP_DRONEPOSITION, {
             "id_pos": self.infos.current_checkpoint_index,
             "imageSize": len(self.infos.image)
-        })
+        }, False)
         self.tcp.send(resp.toJsonStr())
         self.infos.current_checkpoint_index += 1
 

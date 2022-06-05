@@ -11,7 +11,7 @@ VALIDATED_KEY = "validated"
 @dataclass
 class Message:
     type: MessageTypes
-    content: Dict[str, Any]
+    content: Dict[str, Any] = field(default_factory=lambda: {})
 
     @classmethod
     def fromStr(cls, string: str) -> "Message":

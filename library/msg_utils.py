@@ -34,10 +34,10 @@ def send_message(udp_socket: UdpSocket, message: Message, address: Tuple[str, in
 
 # ===== CREATE REQ MESSAGES ====
 def create_ack() -> Message:
-    return Message(MessageTypes.REQ_ACK, {})
+    return Message(MessageTypes.REQ_ACK)
 
 def create_drone_infos() -> Message:
-    return Message(MessageTypes.REQ_DRONE_INFOS, {})
+    return Message(MessageTypes.REQ_DRONE_INFOS)
 
 def create_start_drone() -> Message:
     return Message(MessageTypes.REQ_START_DRONE, {"startDrone": True})
@@ -49,6 +49,33 @@ def create_manual_control(x=0.0, y=0.0, z=0.0, r=0.0) -> Message:
         "z": z,
         "r": r
     })
+
+def create_req_record(record: bool = True) -> Message:
+    return Message(MessageTypes.REQ_RECORD, {
+        "record": record
+    })
+
+def create_req_path_list() -> Message:
+    return Message(MessageTypes.REQ_PATH_LIST)
+
+def create_req_path_one(id: int) -> Message:
+    return Message(MessageTypes.REQ_PATH_ONE, {
+        "pathId": id
+    })
+
+def create_req_path_launch(id: int) -> Message:
+    return Message(MessageTypes.REQ_PATH_LAUNCH, {
+        "pathId": id
+    })
+
+def create_req_autopilot_infos() -> Message:
+    return Message(MessageTypes.REQ_AUTOPILOT_INFOS)
+
+def create_req_regain_control() -> Message:
+    return Message(MessageTypes.REQ_REGAIN_CONTROL)
+
+def create_req_resume_autopilot() -> Message:
+    return Message(MessageTypes.REQ_RESUME_AUTOPILOT)
 
 # ==== CREATE RESP MESSAGES ====
 def create_answer(msg_type: MessageTypes, validated: bool = True, msg_str: str = "") -> Message:

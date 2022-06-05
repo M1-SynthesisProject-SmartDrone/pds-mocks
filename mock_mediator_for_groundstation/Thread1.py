@@ -42,34 +42,35 @@ class Thread1 (threading.Thread):
             try:
                 message = MediatorMessage.receive(self.tcp, True)
                 handler = self.handler_by_request[message.type]
-                handler(self, message)
+                handler(message)
             except Exception as err:
+                print(err)
                 logger.error(err)
 
     def handle_tr_save(self, msg: MediatorMessage):
-        resp = MediatorMessage(MediatorMessageTypes.RESP_TR_SAVE.value, {
-                               "isLaunched": True})
-        if self.infos.mode != MediatorMode.IDLE:
-            logger.warning("Try to launch the save but not in idle mode")
+        resp = MediatorMessage(MediatorMessageTypes.RESP_TR_SAVE, {
+                               "isLaunched": True}, False)
+        if self.infos.mode.name != MediatorMode.IDLE.name:
+            logger.warning(f"Try to launch the save but not in idle mode (got {self.infos.mode.name})")
             resp.content["isLaunched"] = False
         else:
             logger.info("Start record")
             self.infos.mode = MediatorMode.RECORD
-        self.tcp.send(resp)
+        self.tcp.send(resp.toJsonStr())
 
     def handle_register(self, msg: MediatorMessage):
-        resp_name = MediatorMessageTypes.RESP_TR_REGISTER.value
-        imageSize: int = msg.content["imageSize"]
+        resp_name = MediatorMessageTypes.RESP_TR_REGISTER
+        imageSize: int = msg.content["image"]
         # Multiple requests possible
         if self.infos.mode == MediatorMode.IDLE:
             logger.warning("Try to register but in idle mode")
-            resp = MediatorMessage(resp_name, {"isDone": False})
+            resp = MediatorMessage(resp_name, {"isDone": False}, False)
             self.tcp.send(resp.toJsonStr())
         else:
             mode_name = self.infos.mode.name
             logger.info(
                 f"\"Register\" a point in mode {mode_name} : {msg.content}")
-            resp = MediatorMessage(resp_name, {"isDone": True})
+            resp = MediatorMessage(resp_name, {"isDone": True}, False)
             self.tcp.send(resp.toJsonStr())
             # Receive the image
             self.infos.last_image_received = self.tcp.receive_bytes(imageSize)
@@ -77,8 +78,8 @@ class Thread1 (threading.Thread):
 
     def handle_end_tr_save(self, msg: MediatorMessage):
         resp = MediatorMessage(
-            MediatorMessageTypes.RESP_END_TR_SAVE.value, {"isDone": True})
-        if self.infos.mode != MediatorMode.RECORD:
+            MediatorMessageTypes.RESP_END_TR_SAVE, {"isDone": True}, False)
+        if self.infos.mode.name != MediatorMode.RECORD.name:
             logger.warning("Try to launch the save but not in record mode")
             resp.content["isDone"] = False
         else:
@@ -88,9 +89,9 @@ class Thread1 (threading.Thread):
 
     def handle_tr_launch(self, msg: MediatorMessage):
         resp = MediatorMessage(
-            MediatorMessageTypes.RESP_TR_LAUNCH.value, {"isDone": True})
+            MediatorMessageTypes.RESP_TR_LAUNCH, {"isDone": True}, False)
         id: int = msg.content["tr_id"]
-        if self.infos.mode != MediatorMode.IDLE:
+        if self.infos.mode.name != MediatorMode.IDLE.name:
             logger.warning("Try to launch a trip but not in idle mode")
             resp.content["isDone"] = False
         elif PATH_ONE_LIST.get(id, None) is None:
@@ -104,8 +105,8 @@ class Thread1 (threading.Thread):
         self.tcp.send(resp)
 
     def handle_tr_error(self, msg: MediatorMessage):
-        resp = MediatorMessage(MediatorMessageTypes.RESP_ERROR.value, {})
-        if self.infos.mode != MediatorMode.AUTOPILOT:
+        resp = MediatorMessage(MediatorMessageTypes.RESP_ERROR, {}, False)
+        if self.infos.mode.name != MediatorMode.AUTOPILOT.name:
             logger.warning(
                 "Try to go in error mode but was not in autopilot mode")
         else:
@@ -114,17 +115,17 @@ class Thread1 (threading.Thread):
         self.tcp.send(resp)
 
     def handle_tr_end_error(self, msg: MediatorMessage):
-        resp = MediatorMessage(MediatorMessageTypes.RESP_ERROR.value, {})
-        if self.infos.mode != MediatorMode.ERROR:
+        resp = MediatorMessage(MediatorMessageTypes.RESP_ERROR, {}, False)
+        if self.infos.mode.name != MediatorMode.ERROR.name:
             logger.warning("Try to stop error mode but was not in error mode")
         else:
             logger.info(f"Stop error mode")
-            self.infos.mode = MediatorMode.AUTOPILOT
+            self.infos.mode.name = MediatorMode.AUTOPILOT.name
         self.tcp.send(resp)
 
     def handle_get_path_list(self, msg: MediatorMessage):
-        resp = MediatorMessage(MediatorMessageTypes.RESP_PATH_LIST.value, {
-                               "content": PATH_LIST})
+        resp = MediatorMessage(MediatorMessageTypes.RESP_PATH_LIST, {
+                               "content": PATH_LIST}, False)
         self.tcp.send(resp.toJsonStr())
 
     def handle_get_one_path(self, msg: MediatorMessage):
@@ -147,5 +148,5 @@ class Thread1 (threading.Thread):
             "longitude": first_checkpoint["lon"],
             "altitude": first_checkpoint["height"]
         }
-        resp = MediatorMessage(MediatorMessageTypes.RESP_ONE_PATH.value, content)
+        resp = MediatorMessage(MediatorMessageTypes.RESP_ONE_PATH, content, False)
         self.tcp.send(resp.toJsonStr())
