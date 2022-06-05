@@ -9,3 +9,4 @@ class MediatorMockInfos(metaclass=MetaSingleton):
     def __init__(self) -> None:
         self.is_running = True
         self.mode = MediatorMode.IDLE
+        self.last_image_received: bytes

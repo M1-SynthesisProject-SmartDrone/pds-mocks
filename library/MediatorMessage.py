@@ -15,13 +15,16 @@ class MediatorMessage:
     content: Dict[str, Any]
 
     @classmethod
-    def fromStr(cls, string: str) -> "MediatorMessage":
+    def fromStr(cls, string: str, is_request: bool = True) -> "MediatorMessage":
         d = json.loads(string)
-        return cls(MediatorMessageTypes.find_from_value(d["type"]), d)
+        if is_request:
+            return cls(MediatorMessageTypes.find_from_value(d["requestType"]), d)
+        else:
+            return cls(MediatorMessageTypes.find_from_value(d["responseType"]), d)
 
     @classmethod
-    def receive(cls, socket: TcpSocket) -> "MediatorMessage":
-        return MediatorMessage.fromStr(socket.receive())
+    def receive(cls, socket: TcpSocket, is_request: bool = True) -> "MediatorMessage":
+        return MediatorMessage.fromStr(socket.receive(), is_request)
 
     def toJsonStr(self) -> str:
         return json.dumps(self.content)

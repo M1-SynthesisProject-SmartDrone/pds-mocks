@@ -24,11 +24,17 @@ PORT_1, PORT_2 = 7070, 7071
 
 # ==== GLOBAL VARIABLES ====
 infos = MediatorMockInfos()
+thread1 = Thread1(PORT_1)
+thread2 = Thread2(PORT_2)
 
 # ==== SIGNAL HANDLER ====
 def handler(signum, frame):
     logger.info("Stop threads")
     infos.is_running = False
+    if thread1.tcp.com_socket is not None:
+        thread1.tcp.close()
+    if thread2.tcp.com_socket is not None:
+        thread2.tcp.close()
 
 def main():
     logger.remove()
@@ -36,9 +42,6 @@ def main():
 
     # Catch SIGINT
     signal.signal(signal.SIGINT, handler)
-
-    thread1 = Thread1(PORT_1)
-    thread2 = Thread2(PORT_2)
 
     thread1.start()
     thread2.start()
