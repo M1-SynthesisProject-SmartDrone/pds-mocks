@@ -31,6 +31,7 @@ thread2 = Thread2(PORT_2)
 
 # Load the image in the main folder
 image = cv2.imread((Path(__file__).resolve().parent / "test.png").as_posix())
+infos.image = image.tobytes()
 
 # ==== SIGNAL HANDLER ====
 def handler(signum, frame):
