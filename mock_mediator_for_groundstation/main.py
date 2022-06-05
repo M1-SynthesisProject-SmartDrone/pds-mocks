@@ -10,6 +10,8 @@ from pathlib import Path
 import threading
 import signal
 
+import cv2
+
 import sys
 sys.path.append(Path(__file__).resolve().parents[1].as_posix())
 # Must be put after sys.path.append
@@ -26,6 +28,9 @@ PORT_1, PORT_2 = 7070, 7071
 infos = MediatorMockInfos()
 thread1 = Thread1(PORT_1)
 thread2 = Thread2(PORT_2)
+
+# Load the image in the main folder
+image = cv2.imread((Path(__file__).resolve().parent / "test.png").as_posix())
 
 # ==== SIGNAL HANDLER ====
 def handler(signum, frame):

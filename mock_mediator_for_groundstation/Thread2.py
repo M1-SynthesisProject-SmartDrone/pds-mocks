@@ -1,4 +1,5 @@
 
+import json
 import threading
 
 from pathlib import Path
@@ -10,6 +11,7 @@ from library import * # noqa
 
 from library.TcpSocket import TcpSocket
 from MediatorMockInfos import MediatorMockInfos
+from paths import PATH_LIST, PATH_ONE_LIST
 
 # ==== THREAD SECONDARY PORT ====
 class Thread2 (threading.Thread):
@@ -30,13 +32,37 @@ class Thread2 (threading.Thread):
         while self.infos.is_running:
             try:
                 message = MediatorMessage.receive(self.tcp, True)
+                handler = self.handler_by_request[message.type]
+                handler(self, message)
             except Exception as err:
                 logger.error(err)
 
     def handle_req_tr_points(self, msg: MediatorMessage):
-        # Multiple sub requests
-        pass
+        logger.info("Get all checkpoints of trip")
+        id = self.infos.current_tr_id
+        r = MediatorMessage(MediatorMessageTypes.RESP_TR_FILE.value, {"content": PATH_ONE_LIST[id]})
+        msg_bytes = r.toJsonStr().encode("utf-8")
+        # intermediary message
+        resp = MediatorMessage(MediatorMessageTypes.RESP_REQ_TR_POINTS.value, {"filesize": len(msg_bytes)})
+        self.tcp.send(resp.toJsonStr())
+
+        message = MediatorMessage.receive(self.tcp, True)
+        if message.type != MediatorMessageTypes.REQ_WAIT_TR_FILE:
+            logger.warning(f"Didn't receive wanted message type (got {message.type.value})")
+        
+        logger.info(f"Prepare to send {len(msg_bytes)} bytes of data")
+        self.tcp.send_bytes(msg_bytes)
 
     def handle_nexdroneposition(self, msg: MediatorMessage):
-        # Multiple sub requests
-        pass
+        logger.info("Get new drone position")
+        id = self.infos.current_tr_id
+        resp = MediatorMessage(MediatorMessageTypes.RESP_DRONEPOSITION.value, {
+            "id_pos": self.infos.current_checkpoint_index,
+            "imageSize": len(self.infos.image)
+        })
+        self.tcp.send(resp.toJsonStr())
+        self.infos.current_checkpoint_index += 1
+
+        m = MediatorMessage.receive(self.tcp, True)
+        self.tcp.send_bytes(self.infos.image)
+
